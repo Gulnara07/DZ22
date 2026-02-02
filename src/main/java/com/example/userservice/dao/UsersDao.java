@@ -21,6 +21,7 @@ public class UsersDao {
         }
     }
 
+
     // Найти по ID
     public Users findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
