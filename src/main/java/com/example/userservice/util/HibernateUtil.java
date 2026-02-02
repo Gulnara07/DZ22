@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 public class HibernateUtil {
     private static final Logger logger = LoggerFactory.getLogger(HibernateUtil.class);
-    private static SessionFactory sessionFactory;
+    private static final SessionFactory sessionFactory;
 
     static {
         try {

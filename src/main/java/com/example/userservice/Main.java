@@ -1,11 +1,13 @@
 package com.example.userservice;
-
+import com.example.userservice.dao.UsersDao;
+import com.example.userservice.entity.Users;
+import com.example.userservice.util.HibernateUtil;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     private static Scanner scanner = new Scanner(System.in);
-    private static UsersDao usersDao = new UsersDao();  // Изменили UserDao на UsersDao
+    private static UsersDao usersDao = new UsersDao();
 
     public static void main(String[] args) {
         System.out.println("=== Система управления пользователями ===");
@@ -23,7 +25,7 @@ public class Main {
                     case "4" -> updateUser();
                     case "5" -> deleteUser();
                     case "6" -> exit = true;
-                    default -> System.out.println("Неверный выбор!");
+                    default -> System.out.println("Неверный выбор");
                 }
             }
         } catch (Exception e) {
@@ -31,7 +33,7 @@ public class Main {
         } finally {
             HibernateUtil.shutdown();
             scanner.close();
-            System.out.println("Программа завершена.");
+            System.out.println("Программа завершена");
         }
     }
 
@@ -62,7 +64,7 @@ public class Main {
                 return;
             }
 
-            Users user = new Users(name, email, age);  // Users вместо User
+            Users user = new Users(name, email, age);
             Long id = usersDao.create(user);
             System.out.println("Пользователь создан! ID: " + id);
         } catch (Exception e) {
@@ -75,9 +77,9 @@ public class Main {
             System.out.print("Введите ID пользователя: ");
             Long id = Long.parseLong(scanner.nextLine());
 
-            Users user = UsersDao.findById(id);  // Users вместо User
+            Users user = usersDao.findById(id);
             if (user == null) {
-                System.out.println("Пользователь не найден!");
+                System.out.println("Пользователь не найден");
             } else {
                 System.out.println("Найден: " + user);
             }
@@ -88,12 +90,12 @@ public class Main {
 
     private static void showAllUsers() {
         try {
-            List<Users> users = usersDao.findAll();  // List<Users>
+            List<Users> users = usersDao.findAll();
             if (users.isEmpty()) {
-                System.out.println("Нет пользователей.");
+                System.out.println("Нет пользователей");
             } else {
                 System.out.println("Всего пользователей: " + users.size());
-                for (Users user : users) {  // Users вместо User
+                for (Users user : users) {
                     System.out.println("  " + user);
                 }
             }
@@ -107,9 +109,9 @@ public class Main {
             System.out.print("Введите ID пользователя для обновления: ");
             Long id = Long.parseLong(scanner.nextLine());
 
-            Users user = usersDao.findById(id);  // Users
+            Users user = usersDao.findById(id);
             if (user == null) {
-                System.out.println("Пользователь не найден!");
+                System.out.println("Пользователь не найден");
                 return;
             }
 
@@ -120,7 +122,7 @@ public class Main {
             String newEmail = scanner.nextLine();
 
             if (!user.getEmail().equals(newEmail) && usersDao.emailExists(newEmail)) {
-                System.out.println("Ошибка: Email уже используется!");
+                System.out.println("Ошибка: Email уже используется");
                 return;
             }
             user.setEmail(newEmail);
@@ -147,7 +149,7 @@ public class Main {
                 usersDao.delete(id);
                 System.out.println("Пользователь удален!");
             } else {
-                System.out.println("Отменено.");
+                System.out.println("Отменено");
             }
         } catch (Exception e) {
             System.out.println("Ошибка: " + e.getMessage());
