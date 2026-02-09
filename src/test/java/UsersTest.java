@@ -1,4 +1,4 @@
-package com.example.userservice.entity;
+import com.example.userservice.entity.Users;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
