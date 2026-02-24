@@ -1,7 +1,7 @@
 package com.example.userservice.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+        import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")

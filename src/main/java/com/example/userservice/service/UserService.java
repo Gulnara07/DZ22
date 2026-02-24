@@ -3,6 +3,7 @@ package com.example.userservice.service;
 import com.example.userservice.dto.UserRequestDto;
 import com.example.userservice.dto.UserResponseDto;
 import com.example.userservice.entity.Users;
+import com.example.userservice.kafka.UserEventProducer;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -16,25 +17,26 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserEventProducer eventProducer;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    // добавлен eventProducer
+    public UserService(UserRepository userRepository, UserMapper userMapper,
+                       UserEventProducer eventProducer) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.eventProducer = eventProducer;
     }
 
-    // Create
     public UserResponseDto createUser(UserRequestDto dto) {
-        // Проверка email (как в вашем коде)
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email уже существует: " + dto.getEmail());
-        }
-
         Users user = userMapper.toEntity(dto);
         Users savedUser = userRepository.save(user);
+
+        // отправка события в Kafka
+        eventProducer.sendUserCreatedEvent(savedUser.getId(), savedUser.getEmail());
+
         return userMapper.toResponseDto(savedUser);
     }
 
-    // Read all
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -42,23 +44,15 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    // Read one
     public UserResponseDto getUserById(Long id) {
         Users user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + id));
         return userMapper.toResponseDto(user);
     }
 
-    // Update
     public UserResponseDto updateUser(Long id, UserRequestDto dto) {
         Users user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + id));
-
-        // Проверка email если меняется
-        if (!user.getEmail().equals(dto.getEmail()) &&
-                userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email уже используется: " + dto.getEmail());
-        }
 
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -68,11 +62,14 @@ public class UserService {
         return userMapper.toResponseDto(updatedUser);
     }
 
-    // Delete
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("Пользователь не найден: " + id);
-        }
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + id));
+
+        String email = user.getEmail();
         userRepository.deleteById(id);
+
+        // отправка события в Kafka
+        eventProducer.sendUserDeletedEvent(id, email);
     }
 }
