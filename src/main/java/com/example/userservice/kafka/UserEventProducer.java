@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 @Component
 public class UserEventProducer {
 
+    private static final String OPERATION_CREATED = "CREATED";
+    private static final String OPERATION_DELETED = "DELETED";
+
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
@@ -25,7 +28,7 @@ public class UserEventProducer {
         UserEventDto event = new UserEventDto(
                 userId,
                 email,
-                "CREATED",
+                OPERATION_CREATED,
                 LocalDateTime.now().toString()
         );
         sendEvent(event);
@@ -35,7 +38,7 @@ public class UserEventProducer {
         UserEventDto event = new UserEventDto(
                 userId,
                 email,
-                "DELETED",
+                OPERATION_DELETED,
                 LocalDateTime.now().toString()
         );
         sendEvent(event);
